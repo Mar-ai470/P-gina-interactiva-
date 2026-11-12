@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Explora el cuerpo humano | Anatomía 3D</title>
+<style>
+:root{--bg:#081522;--panel:#102437;--panel2:#153149;--ink:#edf7ff;--muted:#a8bfd0;--cyan:#5de0df;--pink:#ff8eaa;--gold:#ffd27a;--line:#29475d}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -20%,#1b4560,#081522 55%);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:24px clamp(16px,4vw,56px) 16px;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+.brand{font-weight:800;letter-spacing:.08em;color:var(--cyan);font-size:.82rem}.hero h1{font-size:clamp(1.8rem,4vw,3rem);margin:8px 0}.hero p{color:var(--muted);max-width:750px;margin:0}
+main{max-width:1300px;margin:auto;padding:12px clamp(12px,3vw,36px) 50px}
+.layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:18px;margin-top:22px}
+.panel{background:linear-gradient(150deg,rgba(21,49,73,.96),rgba(12,31,48,.97));border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 18px 45px #0003}
+.viewer-head{padding:15px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
+.pill{font-size:.76rem;color:var(--cyan);border:1px solid #397b86;border-radius:99px;padding:5px 10px}
+#stage{height:480px;position:relative;background:radial-gradient(ellipse at 50% 48%,#23465b 0,#102a40 44%,#0b1c2d 78%);overflow:hidden;touch-action:none}
+#stage canvas{display:block;width:100%;height:100%;cursor:grab}#stage canvas:active{cursor:grabbing}
+.hint{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:#b8d0df;font-size:.78rem;pointer-events:none}
+.controls{display:flex;gap:8px;flex-wrap:wrap;padding:13px 16px;border-top:1px solid var(--line)}
+button{background:#1b3d56;border:1px solid #3c637b;color:var(--ink);border-radius:11px;padding:9px 12px;font-weight:650;cursor:pointer;transition:.2s}
+button:hover,button.active{background:#1d6571;border-color:var(--cyan);color:white}button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.side{padding:18px}.side h2{margin:0 0 7px;font-size:1.2rem}.side p{color:var(--muted);line-height:1.55;margin:8px 0}
+.systems{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.sys{display:flex;align-items:center;gap:8px;text-align:left;font-size:.85rem;padding:10px 9px}.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.info{background:#0a1d2c;border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:13px;min-height:130px}.info h3{margin:0 0 6px;color:var(--gold)}.info p{margin:0;font-size:.92rem}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 12px}.section{display:none}.section.show{display:block}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.card{padding:16px;background:#10283b;border:1px solid var(--line);border-radius:16px}.card h3{margin:0 0 7px;color:var(--cyan);font-size:1rem}.card p{margin:0;color:var(--muted);font-size:.9rem;line-height:1.5}
+.quiz{padding:18px}.quiz h2{margin-top:0}.answers{display:grid;gap:9px;margin:14px 0}.answers button{text-align:left}.feedback{min-height:28px;color:var(--gold);font-weight:650}
+footer{color:#89a7ba;text-align:center;font-size:.8rem;padding:25px}
+@media(max-width:850px){.layout{grid-template-columns:1fr}#stage{height:420px}.cards{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){#stage{height:360px}.cards{grid-template-columns:1fr}.systems{grid-template-columns:1fr 1fr}.viewer-head{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header><div class="hero"><div class="brand">LABORATORIO DE ANATOMÍA · BIOLOGÍA</div><h1>Explora la estructura anatómica humana</h1><p>Conoce cómo se organiza el cuerpo, identifica órganos y descubre cómo colaboran los sistemas para mantenernos vivos.</p></div><span class="pill">MODELO DIDÁCTICO 3D</span></header>
+<main>
+<div class="layout">
+<section class="panel">
+ <div class="viewer-head"><strong>Modelo anatómico interactivo</strong><span class="pill" id="viewLabel">Vista anterior · cuerpo completo</span></div>
+ <div id="stage"><div class="hint">Arrastra para girar · usa la rueda o los botones para acercar</div></div>
+ <div class="controls">
+  <button id="front" class="active">Vista frontal</button><button id="back">Vista posterior</button><button id="reset">Reiniciar vista</button><button id="zoomIn">＋ Acercar</button><button id="zoomOut">－ Alejar</button>
+ </div>
+</section>
+<aside class="panel side">
+ <h2>Explora los sistemas</h2><p>Selecciona un sistema para resaltarlo en el modelo y leer su función principal.</p>
+ <div class="systems" id="systems">
+  <button class="sys active" data-sys="all"><i class="dot" style="background:#d6b6a0"></i>Cuerpo completo</button>
+  <button class="sys" data-sys="skeleton"><i class="dot" style="background:#eee5cb"></i>Esquelético</button>
+  <button class="sys" data-sys="muscular"><i class="dot" style="background:#c75e70"></i>Muscular</button>
+  <button class="sys" data-sys="nervous"><i class="dot" style="background:#f4c75e"></i>Nervioso</button>
+  <button class="sys" data-sys="respiratory"><i class="dot" style="background:#6bc8df"></i>Respiratorio</button>
+  <button class="sys" data-sys="digestive"><i class="dot" style="background:#e8a05e"></i>Digestivo</button>
+  <button class="sys" data-sys="circulatory"><i class="dot" style="background:#e75d72"></i>Circulatorio</button>
+  <button class="sys" data-sys="urinary"><i class="dot" style="background:#a58ce2"></i>Urinario</button>
+ </div>
+ <div class="info" aria-live="polite"><h3 id="infoTitle">Cuerpo humano</h3><p id="infoText">El cuerpo está formado por células que se organizan en tejidos, órganos y sistemas. Todos trabajan de manera coordinada.</p></div>
+</aside>
+</div>
+<div class="tabs">
+ <button class="active" data-tab="organizacion">Niveles de organización</button><button data-tab="cavidades">Cavidades corporales</button><button data-tab="funciones">Funciones vitales</button><button data-tab="quiz">Comprueba lo aprendido</button>
+</div>
+<section class="section show" id="organizacion"><div class="cards">
+ <article class="card"><h3>1. Células</h3><p>Son la unidad básica estructural y funcional del cuerpo. Ejemplo: neuronas y células musculares.</p></article>
+ <article class="card"><h3>2. Tejidos</h3><p>Grupos de células semejantes que realizan una tarea. Ejemplo: tejido muscular.</p></article>
+ <article class="card"><h3>3. Órganos</h3><p>Estructuras formadas por varios tejidos. Ejemplo: corazón, pulmones y estómago.</p></article>
+ <article class="card"><h3>4. Sistemas y aparatos</h3><p>Conjuntos de órganos que colaboran en funciones complejas, como respirar o digerir.</p></article>
+ <article class="card"><h3>5. Organismo</h3><p>La integración de todos los sistemas forma al ser humano completo.</p></article>
+ </div></section>
+<section class="section" id="cavidades"><div class="cards">
+ <article class="card"><h3>Cavidad craneal</h3><p>Está dentro del cráneo y protege el encéfalo.</p></article>
+ <article class="card"><h3>Cavidad torácica</h3><p>Se encuentra en el tórax. Contiene pulmones y corazón, entre otras estructuras.</p></article>
+ <article class="card"><h3>Cavidad abdominal</h3><p>Contiene gran parte del aparato digestivo, además de órganos como los riñones.</p></article>
+ <article class="card"><h3>Cavidad pélvica</h3><p>Se ubica en la pelvis y contiene la vejiga y órganos reproductores internos.</p></article>
+ </div></section>
+<section class="section" id="funciones"><div class="cards">
+ <article class="card"><h3>Nutrición</h3><p>Obtiene nutrientes y oxígeno, los distribuye y elimina desechos. Participan los sistemas digestivo, respiratorio, circulatorio y urinario.</p></article>
+ <article class="card"><h3>Relación</h3><p>Permite captar estímulos y responder. Participan los órganos de los sentidos, el sistema nervioso y el locomotor.</p></article>
+ <article class="card"><h3>Reproducción</h3><p>Hace posible la formación de nuevos individuos mediante la participación del aparato reproductor.</p></article>
+ </div></section>
+<section class="section panel quiz" id="quiz"><h2>Mini evaluación</h2><p id="question">¿Qué nivel de organización está formado por varios tejidos?</p><div class="answers" id="answers"><button data-correct="false">La célula</button><button data-correct="false">El tejido</button><button data-correct="true">El órgano</button></div><div class="feedback" id="feedback" aria-live="polite"></div><button id="next">Siguiente pregunta →</button></section>
+<footer>Material educativo. El modelo 3D es esquemático y sirve para aprender ubicación y organización general; no sustituye un atlas anatómico clínico.</footer>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const descriptions={
+all:["Cuerpo humano","El cuerpo está formado por células que se organizan en tejidos, órganos y sistemas. Todos trabajan de manera coordinada."],
+skeleton:["Sistema esquelético","Los huesos, cartílagos y articulaciones dan soporte, protegen órganos y permiten el movimiento junto con los músculos."],
+muscular:["Sistema muscular","Los músculos se contraen y relajan para producir movimiento, mantener la postura y generar calor."],
+nervous:["Sistema nervioso","El encéfalo, la médula espinal y los nervios reciben información, la procesan y coordinan respuestas."],
+respiratory:["Sistema respiratorio","Las vías respiratorias conducen el aire. En los pulmones ocurre el intercambio de oxígeno y dióxido de carbono."],
+digestive:["Sistema digestivo","Transforma los alimentos, absorbe nutrientes y elimina los restos no aprovechados."],
+circulatory:["Sistema circulatorio","El corazón impulsa la sangre por los vasos sanguíneos para transportar oxígeno, nutrientes y otras sustancias."],
+urinary:["Sistema urinario","Los riñones filtran la sangre y producen orina; los uréteres, la vejiga y la uretra participan en su eliminación."]
+};
+const stage=document.getElementById('stage');
+let scene,camera,renderer,controls,model,parts={};
+function mat(color,rough=.7){return new THREE.MeshStandardMaterial({color,roughness:rough,metalness:.02})}
+function sphere(parent,name,pos,scale,color,sys){const m=new THREE.Mesh(new THREE.SphereGeometry(1,24,18),mat(color));m.position.set(...pos);m.scale.set(...scale);m.userData.system=sys;parent.add(m);parts[name]=m;return m}
+function bone(parent,a,b,r=.055){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=new THREE.Vector3().subVectors(B,A);const mesh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,d.length(),12),mat(0xeee5cb));mesh.position.copy(A).add(B).multiplyScalar(.5);mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());mesh.userData.system='skeleton';parent.add(mesh);return mesh}
+function capsule(parent,a,b,r,color,sys){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=new THREE.Vector3().subVectors(B,A);let m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,d.length(),16),mat(color));m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());m.userData.system=sys;parent.add(m);sphere(parent,'muscleJoint'+Math.random(),a,[r,r,r],color,sys);sphere(parent,'muscleJoint'+Math.random(),b,[r,r,r],color,sys)}
+function init(){
+ if(!window.THREE){stage.innerHTML='<p style="padding:25px">No se pudo cargar el motor 3D. Comprueba tu conexión a internet y vuelve a abrir el archivo.</p>';return}
+ scene=new THREE.Scene();scene.background=new THREE.Color(0x102a40);
+ camera=new THREE.PerspectiveCamera(35,stage.clientWidth/stage.clientHeight,.1,100);camera.position.set(0,1.2,8);
+ renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(stage.clientWidth,stage.clientHeight);renderer.outputEncoding=THREE.sRGBEncoding;stage.prepend(renderer.domElement);
+ scene.add(new THREE.HemisphereLight(0xd9f2ff,0x263447,2));let light=new THREE.DirectionalLight(0xffffff,2.2);light.position.set(4,6,7);scene.add(light);
+ model=new THREE.Group();scene.add(model);
+ // Silueta corporal y cabeza
+ sphere(model,'head',[0,2.55,0],[.43,.52,.38],0xd6b6a0,'muscular');
+ sphere(model,'neck',[0,1.95,0],[.19,.28,.2],0xd6b6a0,'muscular');
+ sphere(model,'torso',[0,1.05,0],[.78,1.05,.38],0x9b5967,'muscular');
+ sphere(model,'pelvis',[0,-.05,0],[.57,.48,.34],0x9b5967,'muscular');
+ capsule(model,[-.62,1.55,0],[-.92,.65,0],.19,0x9b5967,'muscular');
+ capsule(model,[-.92,.65,0],[-1.02,-.15,0],.14,0x9b5967,'muscular');
+ capsule(model,[.62,1.55,0],[.92,.65,0],.19,0x9b5967,'muscular');
+ capsule(model,[.92,.65,0],[1.02,-.15,0],.14,0x9b5967,'muscular');
+ capsule(model,[-.3,-.3,0],[-.38,-1.45,0],.23,0x9b5967,'muscular');
+ capsule(model,[-.38,-1.45,0],[-.42,-2.5,0],.16,0x9b5967,'muscular');
+ capsule(model,[.3,-.3,0],[.38,-1.45,0],.23,0x9b5967,'muscular');
+ capsule(model,[.38,-1.45,0],[.42,-2.5,0],.16,0x9b5967,'muscular');
+ // Esqueleto simplificado
+ sphere(model,'skull',[0,2.58,.31],[.32,.4,.12],0xeee5cb,'skeleton');
+ bone(model,[0,2.1,.28],[0,.1,.28],.07);
+ for(let y=1.75;y>.35;y-=.22){let w=.42-(1.75-y)*.12;bone(model,[-w,y,.24],[w,y,.24],.035);bone(model,[0,y,.24],[0,y-.12,.24],.025)}
+ bone(model,[-.45,1.65,.2],[.45,1.65,.2],.07);bone(model,[-.4,.15,.2],[0,-.18,.2],.07);bone(model,[.4,.15,.2],[0,-.18,.2],.07);
+ [[-.62,1.55,0,-.92,.65,0],[-.92,.65,0,-1.02,-.15,0],[.62,1.55,0,.92,.65,0],[.92,.65,0,1.02,-.15,0],[-.3,-.3,0,-.38,-1.45,0],[-.38,-1.45,0,-.42,-2.5,0],[.3,-.3,0,.38,-1.45,0],[.38,-1.45,0,.42,-2.5,0]].forEach(v=>bone(model,v.slice(0,3),v.slice(3,6),.055));
+ // Cerebro, pulmones, corazón, hígado, estómago, intestinos, riñones
+ sphere(model,'brain',[0,2.62,.02],[.27,.26,.27],0xf4c75e,'nervous');
+ bone(model,[0,2.35,.1],[0,-.05,.1],.025); // médula
+ sphere(model,'lungL',[-.25,1.28,.36],[.23,.48,.16],0x6bc8df,'respiratory');
+ sphere(model,'lungR',[.25,1.28,.36],[.23,.48,.16],0x6bc8df,'respiratory');
+ sphere(model,'heart',[0,1.18,.54],[.17,.24,.15],0xe75d72,'circulatory');
+ sphere(model,'liver',[-.27,.55,.32],[.34,.19,.13],0xb86c43,'digestive');
+ sphere(model,'stomach',[.25,.58,.34],[.2,.27,.13],0xe8a05e,'digestive');
+ sphere(model,'intestines',[0,.08,.36],[.36,.28,.12],0xe8a05e,'digestive');
+ sphere(model,'kidneyL',[-.38,.2,-.05],[.13,.22,.12],0xa58ce2,'urinary');
+ sphere(model,'kidneyR',[.38,.2,-.05],[.13,.22,.12],0xa58ce2,'urinary');
+ controls=new THREE.OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.target.set(0,.1,0);controls.minDistance=4.5;controls.maxDistance=12;
+ window.addEventListener('resize',resize);animate();
+}
+function resize(){if(!renderer)return;camera.aspect=stage.clientWidth/stage.clientHeight;camera.updateProjectionMatrix();renderer.setSize(stage.clientWidth,stage.clientHeight)}
+function animate(){requestAnimationFrame(animate);if(controls)controls.update();renderer.render(scene,camera)}
+function selectSystem(sys){
+ document.querySelectorAll('.sys').forEach(b=>b.classList.toggle('active',b.dataset.sys===sys));
+ let [t,d]=descriptions[sys];document.getElementById('infoTitle').textContent=t;document.getElementById('infoText').textContent=d;
+ if(model)model.traverse(o=>{if(o.isMesh){let s=o.userData.system||'muscular';o.material.transparent=sys!=='all'&&s!==sys;o.material.opacity=sys==='all'||s===sys?1:.13;o.material.emissive=new THREE.Color(sys!=='all'&&s===sys?0x173b48:0x000000);}});
+}
+document.querySelectorAll('.sys').forEach(b=>b.addEventListener('click',()=>selectSystem(b.dataset.sys)));
+document.getElementById('front').onclick=()=>{if(!controls)return;camera.position.set(0,1.2,8);controls.target.set(0,.1,0);controls.update();document.getElementById('viewLabel').textContent='Vista anterior · cuerpo completo';document.getElementById('front').classList.add('active');document.getElementById('back').classList.remove('active')};
+document.getElementById('back').onclick=()=>{if(!controls)return;camera.position.set(0,1.2,-8);controls.target.set(0,.1,0);controls.update();document.getElementById('viewLabel').textContent='Vista posterior · cuerpo completo';document.getElementById('back').classList.add('active');document.getElementById('front').classList.remove('active')};
+document.getElementById('reset').onclick=()=>document.getElementById('front').click();
+document.getElementById('zoomIn').onclick=()=>{if(controls)camera.position.multiplyScalar(.88)};
+document.getElementById('zoomOut').onclick=()=>{if(controls)camera.position.multiplyScalar(1.12)};
+document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.section').forEach(x=>x.classList.toggle('show',x.id===b.dataset.tab))}));
+const qs=[
+{q:'¿Qué estructura protege principalmente al encéfalo?',a:['La cavidad abdominal','El cráneo','La pelvis'],c:1,e:'El cráneo forma la cavidad craneal y protege el encéfalo.'},
+{q:'¿Cuál es la función principal del sistema circulatorio?',a:['Transportar sustancias por la sangre','Digerir alimentos','Producir movimientos voluntarios'],c:0,e:'El corazón y los vasos sanguíneos permiten distribuir oxígeno, nutrientes y otras sustancias.'},
+{q:'¿Cuál es el orden correcto de organización?',a:['Órgano → célula → tejido','Célula → tejido → órgano → sistema','Sistema → tejido → célula'],c:1,e:'Las células forman tejidos; los tejidos forman órganos y los órganos trabajan en sistemas.'},
+{q:'¿En qué órgano ocurre el intercambio de gases?',a:['Pulmones','Estómago','Vejiga'],c:0,e:'En los alvéolos pulmonares el oxígeno pasa a la sangre y el dióxido de carbono sale de ella.'}
+];let qi=0,answered=false;
+function loadQ(){answered=false;let q=qs[qi];document.getElementById('question').textContent=(qi+1)+'. '+q.q;document.getElementById('feedback').textContent='';let box=document.getElementById('answers');box.innerHTML='';q.a.forEach((a,i)=>{let b=document.createElement('button');b.textContent=a;b.onclick=()=>{if(answered)return;answered=true;let ok=i===q.c;document.getElementById('feedback').textContent=(ok?'¡Correcto! ':'Aún no. ')+q.e; b.style.borderColor=ok?'#5de0a5':'#ff8eaa';};box.appendChild(b)})}
+document.getElementById('next').onclick=()=>{qi=(qi+1)%qs.length;loadQ()};
+init();loadQ();
+</script>
+</body></html>
